@@ -1,15 +1,9 @@
-
-from transformers import ViTFeatureExtractor, ViTForImageClassification
 from PIL import Image
 import torch
 import io
-from deep_translator import GoogleTranslator  # 👈 cambio importante
+from deep_translator import GoogleTranslator
 
-translator = GoogleTranslator(source='auto', target='es')  # 👈 nuevo uso
-
-MODEL_NAME = "google/vit-base-patch16-224"
-feature_extractor = ViTFeatureExtractor.from_pretrained(MODEL_NAME)
-model = ViTForImageClassification.from_pretrained(MODEL_NAME)
+translator = GoogleTranslator(source='auto', target='es')
 
 ANIMALES_CONOCIDOS = [
     "dog", "cat", "puppy", "kitten", "labrador", "retriever",
@@ -41,10 +35,16 @@ def traducir_lista(texto: str) -> str:
     if not texto:
         return None
     partes = [p.strip() for p in texto.split(",")]
-    traducciones = [translator.translate(p) for p in partes]  # 👈 cambio aquí
+    traducciones = [translator.translate(p) for p in partes]
     return ", ".join(traducciones)
 
 def predict_animal(image_bytes):
+    from transformers import ViTFeatureExtractor, ViTForImageClassification  # 👈 solo se importa si se usa
+
+    MODEL_NAME = "google/vit-base-patch16-224"
+    feature_extractor = ViTFeatureExtractor.from_pretrained(MODEL_NAME)
+    model = ViTForImageClassification.from_pretrained(MODEL_NAME)
+
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     inputs = feature_extractor(images=image, return_tensors="pt")
     outputs = model(**inputs)
