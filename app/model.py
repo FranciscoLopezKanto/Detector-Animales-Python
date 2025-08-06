@@ -1,10 +1,11 @@
+
 from transformers import ViTFeatureExtractor, ViTForImageClassification
 from PIL import Image
 import torch
 import io
-from googletrans import Translator
+from deep_translator import GoogleTranslator  # 👈 cambio importante
 
-translator = Translator()
+translator = GoogleTranslator(source='auto', target='es')  # 👈 nuevo uso
 
 MODEL_NAME = "google/vit-base-patch16-224"
 feature_extractor = ViTFeatureExtractor.from_pretrained(MODEL_NAME)
@@ -40,7 +41,7 @@ def traducir_lista(texto: str) -> str:
     if not texto:
         return None
     partes = [p.strip() for p in texto.split(",")]
-    traducciones = [translator.translate(p, src="en", dest="es").text for p in partes]
+    traducciones = [translator.translate(p) for p in partes]  # 👈 cambio aquí
     return ", ".join(traducciones)
 
 def predict_animal(image_bytes):
@@ -52,7 +53,6 @@ def predict_animal(image_bytes):
     label = model.config.id2label[predicted_class_idx]
     confidence = torch.nn.functional.softmax(logits, dim=-1)[0][predicted_class_idx].item()
 
-    # Verificar si cualquier palabra del label está en animales conocidos
     es_animal_detectado = any(word in label.lower() for word in ANIMALES_CONOCIDOS)
 
     if es_animal_detectado:
@@ -60,7 +60,7 @@ def predict_animal(image_bytes):
         animal_final = label
         animal_parecido = None
     else:
-        es_animal = True  # Lo tratamos igual como animal
+        es_animal = True
         animal_final = label
         animal_parecido = traducir_lista(label)
 
