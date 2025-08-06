@@ -1,2 +1,1 @@
 python-3.11.9
-it add .runtime.txt && git commit -m "fix: usar Python 3.11 en Render" && git push
